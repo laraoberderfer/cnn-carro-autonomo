@@ -1,8 +1,8 @@
 import csv
 
-with open('gravacoes/video2fr.csv') as csv_file:
+with open('dados_teste/teste.csv') as csv_file:
 
-    with open('gravacoes/video2fr_teste.csv', 'w', newline='') as file:
+    with open('dados_teste/teste.csv', 'w', newline='') as file:
 
         writer = csv.writer(file)
 

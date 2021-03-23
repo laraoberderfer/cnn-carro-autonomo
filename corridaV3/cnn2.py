@@ -9,6 +9,7 @@ Para Rede Neural Convolucional
 # https://www.fulljoin.com.br/posts/2020-04-27-usando-o-pytorch-no-r-treinando-o-seefood/
 Para lidar com arquivos 'csv' usa biblioteca 'pandas'
 # https://minerandodados.com.br/analise-de-dados-com-python-usando-pandas/
+# https://www.datacamp.com/community/tutorials/pandas-read-csv
 Para carregar imagens
 # https://github.com/lapisco/LapiscoTraining/blob/master/Questions/3/answer.py
 Armazenamento de grandes quantidades de dados com HDF5
@@ -22,25 +23,25 @@ from numpy import asarray
 from PIL import Image
 
 # for reading and displaying images
-from skimage.io import imread
+# from skimage.io import imread
 import matplotlib.pyplot as plt
-#matplotlib inline
+# matplotlib inline
 
 # for creating validation set
 from sklearn.model_selection import train_test_split
 
 # for evaluating the model
-#from sklearn.metrics import accuracy_score
+# from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 
 # PyTorch libraries and modules
 import torch
-import torch.optim as optim
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.autograd import Variable
-from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
-from torch.optim import Adam, SGD
+# import torch.nn.functional as F
+# from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
+# import torch.optim as optim
+# from torch.optim import Adam, SGD
 
 '''
 Função para treinar o modelo
@@ -64,33 +65,48 @@ def treinando(epoch):
     # limpar os gradientes dos parâmetros do modelo
     optimizer.zero_grad()
     
-    #print('antes de treinar:')
-    #print(train_y.shape)
-    #print(val_y.shape)
+    # print('antes de treinar:')
+    # print(train_y.shape)
+    # print(val_y.shape)
 
     # previsão para treinamento e conjunto de validação
     output_train = model(x_train)
     output_val = model(x_val)
-
-    print('depois de treinar:')
-    print(output_train)
-    print(y_train)
+    # print(output_train.shape)
+    # print(y_train.shape)
 
     # computar a perda de treinamento e validação
 
-    loss_train = criterion(output_train, y_train)
-    loss_val = criterion(output_val, y_val)
-    train_losses.append(loss_train)
-    val_losses.append(loss_val)
+    # loss_train = criterion(output_train, y_train)
+    loss_train = loss_fn(output_train.float(), y_train.float())
+    # loss_val = criterion(output_val, y_val)
+    loss_val = loss_fn(output_val.float(), y_val.float())
+
+    loss_hist.append(loss_train.item())
+    # print('depois de otimizar:')
+    # print(loss_train.shape)
+    # print(loss_train)
+
+    train_losses.append(loss_train.item())
+    val_losses.append(loss_val.item())
+
+    # Before the backward pass, use the optimizer object to zero all of the
+    # gradients for the variables it will update (which are the learnable
+    # weights of the model). This is because by default, gradients are
+    # accumulated in buffers( i.e, not overwritten) whenever .backward()
+    # is called. Checkout docs of torch.autograd.backward for more details.
+    optimizer.zero_grad()
 
     # calculando os pesos atualizados de todos os parâmetros do modelo
     loss_train.backward()
-    optimizer.step()
-    tr_loss = loss_train.item()
+
+    # Calling the step function on an Optimizer makes an update to its
+    # parameters
+    optimizer.step()  # theta_i = theta_i - alfa * gradient(i, J(theta))
 
     if epoch%2 == 0:
         # imprimindo a perda de validação
-        print('Epoch : ',epoch+1, '\t', 'loss :', loss_val)
+        print('Epoch : ',epoch+1, '\t', 'loss :', loss_train)
 
 
 # Rede Neural Convolucional
@@ -129,58 +145,37 @@ class Net(nn.Module):
 #id, direção, aceleracao
 def geraTreino(origem):
     retorno = []
-    retorno1 = []
-    # https://minerandodados.com.br/analise-de-dados-com-python-usando-pandas/
-    # origem.index.stop = retorna o tamanho total
-    # origem.loc[0:10] = retorna um trecho
-    # origem.loc[50:60, ['dir']] = retorna um trecho e seleciona algumas colunas
-    # print(origem.loc[50:60, ['id','dir','ace']])
-    # https://medium.com/ensina-ai/entendendo-a-biblioteca-numpy-4858fde63355
-    # https://medium.com/data-hackers/uma-introdu%C3%A7%C3%A3o-simples-ao-pandas-1e15eea37fa1
-
     for i in range(origem.index.stop):
-
         linha = origem.values[i]
-
         a = 0
         b = 0
         c = 0
-        #direita ex [161, 0, 0, 1]
+        # direita ex [161, 0, 0, 1]
         if linha[1] > 0:
             c = 1
-        #esquerda ex [1291, 1, 0, 0]
+        # esquerda ex [1291, 1, 0, 0]
         if linha[1] < 0:
             a = 1
-        #aceleracao ex [1335, 0, 1, 0]
+        # aceleracao ex [1335, 0, 1, 0]
         if linha[2] > 0:
             b = 1
-        #print(linha[0].astype('int32'))
-        #print(a,b,c)
-        retorno.append([linha[0].astype('int32'),a,b,c])
-
+        retorno.append([linha[0].astype('int32'), a, b, c])
     return retorno
 
+# Carregando o conjunto de dados
 
-'''
-Do conjunto de dados 70% é treinamento e 30% é teste
-Carregando o conjunto de dados
-# https://www.datacamp.com/community/tutorials/pandas-read-csv
-'''
-#arquivo de contém o id de cada imagem e seu rótulo correspondente
-#id, direção, aceleração
+# arquivo de contém o id de cada imagem e seu rótulo correspondente
+# id, direção, aceleração
 train = geraTreino(pd.read_csv('dados_teste/dados_treino.csv'))
 
-#arquivo contém apenas os ids e temos que prever seus rótulos correspondentes
+# arquivo contém apenas os ids e temos que prever seus rótulos correspondentes
 valida_csv = geraTreino(pd.read_csv('dados_teste/dados_treino.csv'))
 
-#arquivo de envio de amostra nos dirá o formato em que devemos enviar as previsões
+# arquivo de envio de amostra nos dirá o formato em que devemos enviar as previsões
 sample_submission = pd.read_csv('dados_teste/dados_treino.csv')
 
-#train.head()
-
-#Vamos ler todas as imagens uma por uma e empilhá-las uma sobre a outra em um array
-#loading training images
-
+# Vamos ler todas as imagens uma por uma e empilhá-las uma sobre a outra em um array
+# loading training images
 i=0
 train_img = []
 train = np.array(train)
@@ -192,7 +187,7 @@ for i in range(train.size):
     image = image.resize((40, 60))
     pixels = asarray(image)
     pixels = pixels.astype('float32')
-    pixels /= 255.0    #(normalizar entre -1 e 1)
+    pixels /= 255.0    # (normalizar entre -1 e 1)
     train_img.append(pixels)
     if i < 99:  # diminuindo para teste
         i += 1
@@ -207,29 +202,30 @@ train_y = train[0:100] # diminuindo para teste
 
 # visualizando images
 i = 0
+'''
 plt.figure(figsize=(10,10))
 plt.subplot(221), plt.imshow(train_x[i])
 plt.subplot(222), plt.imshow(train_x[i+25])
 plt.subplot(223), plt.imshow(train_x[i+50])
 plt.subplot(224), plt.imshow(train_x[i+75])
-#plt.show()
+# plt.show()
+'''
 
 # criação de um conjunto de validação
-train_x, val_x, train_y, val_y = train_test_split(train_x, train_y, test_size = 0.5)
+train_x, val_x, train_y, val_y = train_test_split(train_x, train_y, test_size=0.5)
 (train_x.shape, train_y.shape), (val_x.shape, val_y.shape)
-
 
 # converting training images into torch format
 train_x = train_x.reshape(train_x.shape[0], 3, 40, 60)
-#train_x = train_x.reshape(736, 720000)
-train_x  = torch.from_numpy(train_x)
+# train_x = train_x.reshape(736, 720000)
+train_x = torch.from_numpy(train_x)
 # converting the target into torch format
 train_y = train_y.astype(int)
 train_y = torch.from_numpy(train_y)
 # shape of training data
 train_x.shape, train_y.shape
 # converter as imagens de validação
-#val_x = val_x.reshape(736, 720000)
+# val_x = val_x.reshape(736, 720000)
 val_x = val_x.reshape(val_x.shape[0], 3, 40, 60)
 val_x  = torch.from_numpy(val_x)
 # converting the target into torch format
@@ -239,27 +235,31 @@ val_y = torch.from_numpy(val_y)
 val_x.shape, val_y.shape
 
 
-#excluindo label
-#train_x = np.delete(train_x, 0, 1)
+# excluindo label
+# train_x = np.delete(train_x, 0, 1)
 train_y = np.delete(train_y, 0, 1)
-#val_x = np.delete(val_x, 0, 1)
+# val_x = np.delete(val_x, 0, 1)
 val_y = np.delete(val_y, 0, 1)
 
 
-#chamar este modelo e definir o otimizador e a função de perda para o modelo
+# chamar este modelo e definir o otimizador e a função de perda para o modelo
 # defining the model
 model = Net()
 print(model)
 
-#parâmetros de aprendizagem de um modelo são retornados: 
+# parâmetros de aprendizagem de um modelo são retornados:
 params = list(model.parameters())
 
 # definindo a função de perda
-criterion = nn.CrossEntropyLoss()
+# criterion = nn.CrossEntropyLoss()
+loss_fn = torch.nn.MSELoss(reduction='sum')
 
 # definindo o otimizador
-#optimizer = Adam(model.parameters(), lr=0.07)
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+# optimizer = Adam(model.parameters(), lr=0.07)
+# optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+learning_rate = 1e-4
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+loss_hist = []
 
 # checking if GPU is available
 if torch.cuda.is_available():
@@ -277,12 +277,18 @@ val_losses = []
 for epoch in range(n_epochs):
     treinando(epoch)
 
+plt.plot(loss_hist)
+plt.title('Loss history')
+#plt.show()
+#plt.clf()
+
+
 # plotting the training and validation loss
 plt.plot(train_losses, label='Training loss')
 plt.plot(val_losses, label='Validation loss')
 plt.legend()
-#plt.show()
-
+plt.show()
+'''
 # previsão para conjunto de treinamento
 with torch.no_grad():
     output = model(train_x.cuda())
@@ -305,7 +311,7 @@ predictions = np.argmax(prob, axis=1)
 # accuracy on validation set
 accuracy_score(val_y, predictions)
 
-#Gerando previsões para o conjunto de teste
+# Gerando previsões para o conjunto de teste
 # loading test images
 
 test_img = []
@@ -314,12 +320,12 @@ for img_name in tqdm(test['id']):
     image = Image.open(image_path)
     pixels = asarray(image)
     print('Data Type: %s' % pixels.dtype)
-    #print('Min: %.3f, Max: %.3f' % (pixels.min(), pixels.max()))
+    # print('Min: %.3f, Max: %.3f' % (pixels.min(), pixels.max()))
     pixels = pixels.astype('float32')
     pixels /= 255.0
     test_img.append(pixels)
-    #print('Min: %.3f, Max: %.3f' % (pixels.min(), pixels.max()))
-    '''
+    # print('Min: %.3f, Max: %.3f' % (pixels.min(), pixels.max()))
+    
     # defining the image path
     image_path = 'gravacao/video2fr/' + str(img_name) + '.jpg'
     # reading the image
@@ -330,7 +336,7 @@ for img_name in tqdm(test['id']):
     img = img.astype('float32')
     # appending the image into the list
     test_img.append(img)
-    '''
+    
 
 
 # convertendo a lista em array numpy
@@ -354,5 +360,5 @@ predictions = np.argmax(prob, axis=1)
 
 # substituindo o rótulo com previsão
 sample_submission['dir'] = predictions
-sample_submission.head()
-
+sample_submission.head()   
+'''
