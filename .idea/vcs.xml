@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/corridaV3/scikit-image" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/scikit-image" vcs="Git" />
   </component>
 </project>
