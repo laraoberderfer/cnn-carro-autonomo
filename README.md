@@ -1,4 +1,4 @@
-# Rede convolucional para carro autonomo
+# Rede Neural Convolucional para carro autonomo
 -------------------------------------------------------------------------------------------------
 #### Preparando o ambiente:
 Instalando dependências no linux/windows para as bibliotecas (as vezes não precisa todas)
