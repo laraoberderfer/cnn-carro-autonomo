@@ -39,6 +39,5 @@ Instalando dependências no linux/windows para as bibliotecas (as vezes não pre
 - Docente de Informática - Câmpus Chapecó
 - Acadêmica do Doutorado de Automação e Sistemas da UFSC 2021  
 - Instituto Federal de Santa Catarina - Câmpus Chapecó
-Rua Nereu Ramos, 3450D, Universitário, Chapecó / SC - CEP: 89813-000 
 - IFSC: http://www.chapeco.ifsc.edu.br
 -------------------------------------------------------------------------------------------------
