@@ -1,4 +1,5 @@
 # Rede Neural Convolucional para carro autonomo
+![tela](https://github.com/laraoberderfer/cnn-carro-autonomo/edit/Vers%C3%A3o1/carrinho.png)
 -------------------------------------------------------------------------------------------------
 #### Preparando o ambiente:
 Instalando dependências no linux/windows para as bibliotecas (as vezes não precisa todas)
